@@ -66,11 +66,13 @@ $pdo = new PDO('mysql:host=db;dbname=app', 'root', 'secret');
 
 ## Tags
 
-| Tag | When it is created |
-|-----|--------------------|
-| `latest`, `main` | every push to `main` |
-| `sha-<commit>` | every push, points to a specific commit |
-| `1.2.0`, `1.2` | pushing the tag `v1.2.0` |
+Images are built only when a `v*` git tag is pushed. Pushing `v1.2.0` publishes:
+
+| Tag | Description |
+|-----|-------------|
+| `1.2.0` | exact version |
+| `1.2` | newest patch of the `1.2` line |
+| `latest` | newest release (not set for pre-releases such as `v1.2.0-rc1`) |
 
 To release a version:
 
@@ -87,4 +89,4 @@ docker build -t php8_mysql .
 
 ## CI
 
-The image is built and published to GitHub Container Registry by the workflow [.github/workflows/docker-publish.yml](.github/workflows/docker-publish.yml). Pull requests are only built, not published. Each image's description (`org.opencontainers.image.description`) lists the PHP version and the versions of the installed extensions, e.g. `PHP 8.5.0 (fpm) | mysqli 8.5.0 | pdo 8.5.0 | pdo_mysql 8.5.0 | mysqlnd 8.5.0`. After each publish, only the 2 newest images are kept in the registry; older ones are deleted.
+The image is built and published to GitHub Container Registry by the workflow [.github/workflows/docker-publish.yml](.github/workflows/docker-publish.yml). Each image's description (`org.opencontainers.image.description`) lists the PHP version and the versions of the installed extensions, e.g. `PHP 8.5.0 (fpm) | mysqli 8.5.0 | pdo 8.5.0 | pdo_mysql 8.5.0 | mysqlnd 8.5.0`. After each publish, only the 2 newest images are kept in the registry; older ones are deleted.
