@@ -87,4 +87,4 @@ docker build -t php8_mysql .
 
 ## CI
 
-The image is built and published to GitHub Container Registry by the workflow [.github/workflows/docker-publish.yml](.github/workflows/docker-publish.yml). Pull requests are only built, not published. After each publish, only the 2 newest images are kept in the registry; older ones are deleted.
+The image is built and published to GitHub Container Registry by the workflow [.github/workflows/docker-publish.yml](.github/workflows/docker-publish.yml). Pull requests are only built, not published. Each image's description (`org.opencontainers.image.description`) lists the PHP version and the versions of the installed extensions, e.g. `PHP 8.5.0 (fpm) | mysqli 8.5.0 | pdo 8.5.0 | pdo_mysql 8.5.0 | mysqlnd 8.5.0`. After each publish, only the 2 newest images are kept in the registry; older ones are deleted.

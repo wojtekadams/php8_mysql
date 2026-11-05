@@ -37,9 +37,33 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build image for version check
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: php8_mysql:ci
+          cache-from: type=gha
+
+      - name: Read PHP and extension versions
+        id: versions
+        run: |
+          description=$(docker run --rm php8_mysql:ci php -r '
+            $parts = ["PHP " . PHP_VERSION . " (fpm)"];
+            foreach (["mysqli", "pdo", "pdo_mysql", "mysqlnd"] as $ext) {
+                $parts[] = $ext . " " . preg_replace("/^\D+/", "", phpversion($ext));
+            }
+            echo implode(" | ", $parts);
+          ')
+          echo "description=$description" >> "$GITHUB_OUTPUT"
+          echo "### $description" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
@@ -49,6 +73,10 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha
+          labels: |
+            org.opencontainers.image.description=${{ steps.versions.outputs.description }}
+          annotations: |
+            org.opencontainers.image.description=${{ steps.versions.outputs.description }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -58,6 +86,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
